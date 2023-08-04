@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Application</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.application.service</a> &gt; <span class="el_source">CustomerService.java</span></div><h1>CustomerService.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.application.service;
+
+import com.kenzie.marketing.application.controller.CustomerController;
+import com.kenzie.marketing.application.controller.model.CreateCustomerRequest;
+import com.kenzie.marketing.application.controller.model.CustomerResponse;
+import com.kenzie.marketing.application.controller.model.LeaderboardUiEntry;
+import com.kenzie.marketing.application.repositories.CustomerRepository;
+import com.kenzie.marketing.application.repositories.model.CustomerRecord;
+import com.kenzie.marketing.referral.model.CustomerReferrals;
+import com.kenzie.marketing.referral.model.LeaderboardEntry;
+import com.kenzie.marketing.referral.model.Referral;
+import com.kenzie.marketing.referral.model.ReferralRequest;
+import com.kenzie.marketing.referral.model.client.ReferralServiceClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static java.util.UUID.randomUUID;
+
+@Service
+public class CustomerService {
+<span class="fc" id="L30">    private static final Double REFERRAL_BONUS_FIRST_LEVEL = 10.0;</span>
+<span class="fc" id="L31">    private static final Double REFERRAL_BONUS_SECOND_LEVEL = 3.0;</span>
+<span class="fc" id="L32">    private static final Double REFERRAL_BONUS_THIRD_LEVEL = 1.0;</span>
+
+    private CustomerRepository customerRepository;
+    private ReferralServiceClient referralServiceClient;
+
+<span class="fc" id="L37">    public CustomerService(CustomerRepository customerRepository, ReferralServiceClient referralServiceClient) {</span>
+<span class="fc" id="L38">        this.customerRepository = customerRepository;</span>
+<span class="fc" id="L39">        this.referralServiceClient = referralServiceClient;</span>
+<span class="fc" id="L40">    }</span>
+
+    /**
+     * findAllCustomers
+     * @return A list of Customers
+     */
+    public List&lt;CustomerResponse&gt; findAllCustomers() {
+<span class="fc" id="L47">        List&lt;CustomerRecord&gt; records = StreamSupport.stream(customerRepository.findAll().spliterator(), true).collect(Collectors.toList());</span>
+
+        // Task 1 - Add your code here
+
+<span class="fc" id="L51">        return null;</span>
+    }
+
+    /**
+     * findByCustomerId
+     * @param customerId
+     * @return The Customer with the given customerId
+     */
+    public CustomerResponse getCustomer(String customerId) {
+<span class="fc" id="L60">        Optional&lt;CustomerRecord&gt; record = customerRepository.findById(customerId);</span>
+
+        // Task 1 - Add your code here
+
+<span class="fc" id="L64">        return null;</span>
+    }
+
+    /**
+     * addNewCustomer
+     *
+     * This creates a new customer.  If the referrerId is included, the referrerId must be valid and have a
+     * corresponding customer in the DB.  This posts the referrals to the referral service
+     * @param createCustomerRequest
+     * @return A CustomerResponse describing the customer
+     */
+    public CustomerResponse addNewCustomer(CreateCustomerRequest createCustomerRequest) {
+        // 1: There are two options for the referrerId - it's either empty (meaning the customer joined by themselves)
+        // or contains a value (meaning another customer with that ID referred them).
+        // If the request contains a referrerId, then that must be a valid customer id from the table.
+        // If that referrerId does not exist in the Customer table, the request should be rejected.
+        // 2: The CustomerRecord should be created and saved into the Customer table. To create the customer ID,
+        // use a call to record.setId(randomUUID().toString()).
+        // 3: A call should be made to referralServiceClient.addReferral() to add the new customer.
+        // It is important that the referralServiceClient.addReferral() method is called for every customer
+        // added, even if they were not referred! If a customer had no referrer, you should still call
+        // addReferral() using a blank referrerId.
+        // 4:A response object should be created and returned with all the necessary information.
+<span class="fc" id="L87">        CustomerRecord customerRecord = new CustomerRecord();</span>
+<span class="fc" id="L88">        customerRecord.setId(randomUUID().toString());</span>
+<span class="fc" id="L89">        customerRecord.setDateCreated(LocalDateTime.now().toString()); //possible ZoneDateTime.now().toString()</span>
+<span class="fc" id="L90">        customerRecord.setName(createCustomerRequest.getName());</span>
+
+        ReferralRequest referralRequest;
+
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if(createCustomerRequest.getReferrerId().isEmpty()) {</span>
+
+<span class="fc" id="L96">        referralRequest = new ReferralRequest(customerRecord.getId(), &quot;&quot;);</span>
+
+        }
+        else {
+<span class="nc bnc" id="L100" title="All 2 branches missed.">            if (!customerRepository.existsById(createCustomerRequest.getReferrerId()</span>
+<span class="nc" id="L101">                    .get())) {</span>
+<span class="nc" id="L102">                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Customer not found.&quot;);</span>
+            } else {
+<span class="nc" id="L104">                customerRecord.setReferrerId(createCustomerRequest.getReferrerId().get());</span>
+
+<span class="nc" id="L106">                referralRequest = new ReferralRequest(customerRecord.getId(),  createCustomerRequest</span>
+<span class="nc" id="L107">                        .getReferrerId().get());</span>
+
+            }
+        }
+<span class="fc" id="L111">        customerRepository.save(customerRecord);</span>
+<span class="fc" id="L112">        referralServiceClient.addReferral(referralRequest);</span>
+
+<span class="nc" id="L114">        return customerResponseHelp(customerRecord);</span>
+    }
+
+    /**
+     * updateCustomer - This updates the customer name for the given customer id
+     * @param customerId - The Id of the customer to update
+     * @param customerName - The new name for the customer
+     */
+    public CustomerResponse updateCustomer(String customerId, String customerName) {
+<span class="fc" id="L123">        Optional&lt;CustomerRecord&gt; customerExists = customerRepository.findById(customerId);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (customerExists.isEmpty()) {</span>
+<span class="fc" id="L125">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Customer Not Found&quot;);</span>
+        }
+<span class="fc" id="L127">        CustomerRecord customerRecord = customerExists.get();</span>
+<span class="fc" id="L128">        customerRecord.setName(customerName);</span>
+<span class="fc" id="L129">        customerRepository.save(customerRecord);</span>
+
+        // Task 1 - Add your code here
+
+<span class="fc" id="L133">        return null;</span>
+    }
+
+    /**
+     * deleteCustomer - This deletes the customer record for the given customer id
+     * @param customerId
+     */
+    public void deleteCustomer(String customerId) {
+<span class="nc" id="L141">        customerRepository.deleteById(customerId);</span>
+<span class="nc" id="L142">    }</span>
+
+    /**
+     * calculateBonus - This calculates the referral bonus for the given customer according to the referral bonus
+     * constants.
+     * @param customerId
+     * @return
+     */
+    public Double calculateBonus(String customerId) {
+<span class="nc" id="L151">        CustomerReferrals referrals = referralServiceClient.getReferralSummary(customerId);</span>
+
+<span class="nc" id="L153">        Double calculationResult = REFERRAL_BONUS_FIRST_LEVEL * referrals.getNumFirstLevelReferrals() +</span>
+<span class="nc" id="L154">                REFERRAL_BONUS_SECOND_LEVEL * referrals.getNumSecondLevelReferrals() +</span>
+<span class="nc" id="L155">                REFERRAL_BONUS_THIRD_LEVEL * referrals.getNumThirdLevelReferrals();</span>
+
+<span class="nc" id="L157">        return calculationResult;</span>
+    }
+
+    /**
+     * getReferrals - This returns a list of referral entries for every customer directly referred by the given
+     * customerId.
+     * @param customerId
+     * @return
+     */
+    public List&lt;CustomerResponse&gt; getReferrals(String customerId) {
+
+        // Task 1 - Add your code here
+
+<span class="nc" id="L170">        return null;</span>
+    }
+
+    /**
+     * getLeaderboard - This calls the referral service to retrieve the current top 5 leaderboard of the most referrals
+     * @return
+     */
+    public List&lt;LeaderboardUiEntry&gt; getLeaderboard() {
+
+        // Task 2 - Add your code here
+
+<span class="nc" id="L181">        return null;</span>
+    }
+
+    /* -----------------------------------------------------------------------------------------------------------
+        Private Methods
+       ----------------------------------------------------------------------------------------------------------- */
+
+    private CustomerResponse customerResponseHelp (CustomerRecord customerRecord) {
+<span class="fc" id="L189">        CustomerResponse customerResponse = new CustomerResponse();</span>
+<span class="fc" id="L190">        customerResponse.setName(customerRecord.getName());</span>
+<span class="fc" id="L191">        customerResponse.setId(customerRecord.getId());</span>
+<span class="fc" id="L192">        customerResponse.setDateJoined(customerRecord.getDateCreated());</span>
+<span class="fc" id="L193">        customerResponse.setReferrerId(customerRecord.getReferrerId());</span>
+<span class="pc" id="L194">        customerResponse.setReferrerName(customerRepository.findById(customerRecord.getReferrerId())</span>
+<span class="nc" id="L195">                .map(CustomerRecord::getName)</span>
+<span class="nc" id="L196">                .orElse(&quot;&quot;));</span>
+<span class="nc" id="L197">        return customerResponse;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

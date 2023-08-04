@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerRecord.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Application</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.application.repositories.model</a> &gt; <span class="el_source">CustomerRecord.java</span></div><h1>CustomerRecord.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.application.repositories.model;
+
+
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+
+import java.util.Objects;
+
+@DynamoDBTable(tableName = &quot;Customer&quot;)
+<span class="fc" id="L11">public class CustomerRecord {</span>
+    private String id;
+    private String name;
+    private String dateCreated;
+    private String referrerId;
+
+    @DynamoDBHashKey(attributeName = &quot;Id&quot;)
+    public String getId() {
+<span class="fc" id="L19">        return id;</span>
+    }
+
+    @DynamoDBAttribute(attributeName = &quot;Name&quot;)
+    public String getName() {
+<span class="fc" id="L24">        return name;</span>
+    }
+
+    @DynamoDBAttribute(attributeName = &quot;DateCreated&quot;)
+    public String getDateCreated() {
+<span class="fc" id="L29">        return dateCreated;</span>
+    }
+
+    @DynamoDBAttribute(attributeName = &quot;ReferrerId&quot;)
+    public String getReferrerId() {
+<span class="fc" id="L34">        return referrerId;</span>
+    }
+
+    public void setId(String id) {
+<span class="fc" id="L38">        this.id = id;</span>
+<span class="fc" id="L39">    }</span>
+
+    public void setName(String name) {
+<span class="fc" id="L42">        this.name = name;</span>
+<span class="fc" id="L43">    }</span>
+
+    public void setDateCreated(String dateCreated) {
+<span class="fc" id="L46">        this.dateCreated = dateCreated;</span>
+<span class="fc" id="L47">    }</span>
+
+    public void setReferrerId(String referrerId) {
+<span class="nc" id="L50">        this.referrerId = referrerId;</span>
+<span class="nc" id="L51">    }</span>
+
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L56" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L57">        CustomerRecord that = (CustomerRecord) o;</span>
+<span class="nc" id="L58">        return Objects.equals(id, that.id);</span>
+    }
+
+    @Override
+    public int hashCode() {
+<span class="nc" id="L63">        return Objects.hash(id);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

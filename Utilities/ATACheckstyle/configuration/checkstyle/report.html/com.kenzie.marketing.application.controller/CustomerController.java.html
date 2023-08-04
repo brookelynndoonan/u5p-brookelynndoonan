@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Application</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.application.controller</a> &gt; <span class="el_source">CustomerController.java</span></div><h1>CustomerController.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.application.controller;
+
+import com.kenzie.marketing.application.controller.model.CreateCustomerRequest;
+import com.kenzie.marketing.application.controller.model.CustomerResponse;
+import com.kenzie.marketing.application.controller.model.CustomerUpdateRequest;
+import com.kenzie.marketing.application.controller.model.LeaderboardUiEntry;
+import com.kenzie.marketing.application.controller.model.ReferralBonusResponse;
+import com.kenzie.marketing.application.service.CustomerService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/customers&quot;)
+public class CustomerController {
+
+    private CustomerService customerService;
+
+<span class="nc" id="L24">    CustomerController(CustomerService customerService) {</span>
+<span class="nc" id="L25">        this.customerService = customerService;</span>
+<span class="nc" id="L26">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;CustomerResponse&gt; addNewCustomer(@RequestBody CreateCustomerRequest createCustomerRequest) {
+
+<span class="nc bnc" id="L31" title="All 4 branches missed.">        if (createCustomerRequest.getName() == null || createCustomerRequest.getName().length() == 0) {</span>
+<span class="nc" id="L32">            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, &quot;Invalid Customer Name&quot;);</span>
+        }
+
+        // If the referrerId is an empty string, then treat is as not present.
+<span class="nc bnc" id="L36" title="All 4 branches missed.">        if (createCustomerRequest.getReferrerId().isPresent() &amp;&amp; createCustomerRequest.getReferrerId().get().length() == 0) {</span>
+<span class="nc" id="L37">            createCustomerRequest.setReferrerId(Optional.empty());</span>
+        }
+
+<span class="nc" id="L40">        CustomerResponse response = customerService.addNewCustomer(createCustomerRequest);</span>
+
+<span class="nc" id="L42">        return ResponseEntity.created(URI.create(&quot;/customers/&quot; + response.getId())).body(response);</span>
+    }
+
+    @PostMapping(&quot;/{customerId}&quot;)
+    public ResponseEntity&lt;CustomerResponse&gt; updateCustomer(@RequestBody CustomerUpdateRequest customerRequest) {
+<span class="nc" id="L47">        CustomerResponse response = customerService.updateCustomer(customerRequest.getId(), customerRequest.getName());</span>
+
+<span class="nc" id="L49">        return ResponseEntity.ok(response);</span>
+    }
+
+    @GetMapping
+    public ResponseEntity&lt;List&lt;CustomerResponse&gt;&gt; getAllCustomers() {
+<span class="nc" id="L54">        List&lt;CustomerResponse&gt; customers = customerService.findAllCustomers();</span>
+<span class="nc bnc" id="L55" title="All 4 branches missed.">        if (customers == null || customers.isEmpty()) {</span>
+<span class="nc" id="L56">            return ResponseEntity.noContent().build();</span>
+        }
+
+<span class="nc" id="L59">        return ResponseEntity.ok(customers);</span>
+    }
+
+    @GetMapping(&quot;/leaderboard&quot;)
+    public ResponseEntity&lt;List&lt;LeaderboardUiEntry&gt;&gt; getReferralsLeaders() {
+<span class="nc" id="L64">        List&lt;LeaderboardUiEntry&gt; leaderboard = customerService.getLeaderboard();</span>
+<span class="nc" id="L65">        return ResponseEntity.ok(leaderboard);</span>
+    }
+
+    @GetMapping(&quot;/{customerId}&quot;)
+    public ResponseEntity&lt;CustomerResponse&gt; searchCustomerById(@PathVariable(&quot;customerId&quot;) String customerId) {
+<span class="nc" id="L70">        CustomerResponse customerResponse = customerService.getCustomer(customerId);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (customerResponse == null) {</span>
+<span class="nc" id="L72">            return ResponseEntity.notFound().build();</span>
+        }
+<span class="nc" id="L74">        return ResponseEntity.ok(customerResponse);</span>
+    }
+
+    @DeleteMapping(&quot;/{customerId}&quot;)
+    public ResponseEntity deleteCustomerById(@PathVariable(&quot;customerId&quot;) String customerId) {
+<span class="nc" id="L79">        customerService.deleteCustomer(customerId);</span>
+<span class="nc" id="L80">        return ResponseEntity.ok().build();</span>
+    }
+
+    @GetMapping(&quot;/{customerId}/referrals&quot;)
+    public ResponseEntity&lt;List&lt;CustomerResponse&gt;&gt; getReferrals(@PathVariable(&quot;customerId&quot;) String customerId) {
+<span class="nc" id="L85">        List&lt;CustomerResponse&gt; referrals = customerService.getReferrals(customerId);</span>
+<span class="nc" id="L86">        return ResponseEntity.ok(referrals);</span>
+    }
+
+    @GetMapping(&quot;/{customerId}/bonus&quot;)
+    public ResponseEntity&lt;ReferralBonusResponse&gt; getCustomerBonus(@PathVariable(&quot;customerId&quot;) String customerId) {
+<span class="nc" id="L91">        Double bonus = customerService.calculateBonus(customerId);</span>
+<span class="nc" id="L92">        ReferralBonusResponse referralBonusResponse = new ReferralBonusResponse();</span>
+<span class="nc" id="L93">        referralBonusResponse.setBonus(bonus);</span>
+<span class="nc" id="L94">        return ResponseEntity.ok(referralBonusResponse);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

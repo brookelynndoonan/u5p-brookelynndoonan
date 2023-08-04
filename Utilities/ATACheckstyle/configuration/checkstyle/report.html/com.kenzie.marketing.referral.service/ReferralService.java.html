@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReferralService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ReferralServiceLambda</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.referral.service</a> &gt; <span class="el_source">ReferralService.java</span></div><h1>ReferralService.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.referral.service;
+
+import com.kenzie.marketing.referral.model.CustomerReferrals;
+import com.kenzie.marketing.referral.model.LeaderboardEntry;
+import com.kenzie.marketing.referral.model.Referral;
+import com.kenzie.marketing.referral.model.ReferralRequest;
+import com.kenzie.marketing.referral.model.ReferralResponse;
+import com.kenzie.marketing.referral.service.converter.ReferralConverter;
+import com.kenzie.marketing.referral.service.dao.ReferralDao;
+import com.kenzie.marketing.referral.service.exceptions.InvalidDataException;
+import com.kenzie.marketing.referral.service.model.ReferralRecord;
+
+import javax.inject.Inject;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.List;
+
+public class ReferralService {
+
+    private ReferralDao referralDao;
+    private ExecutorService executor;
+
+    @Inject
+<span class="fc" id="L25">    public ReferralService(ReferralDao referralDao) {</span>
+<span class="fc" id="L26">        this.referralDao = referralDao;</span>
+<span class="fc" id="L27">        this.executor = Executors.newCachedThreadPool();</span>
+<span class="fc" id="L28">    }</span>
+
+    // Necessary for testing, do not delete
+<span class="nc" id="L31">    public ReferralService(ReferralDao referralDao, ExecutorService executor) {</span>
+<span class="nc" id="L32">        this.referralDao = referralDao;</span>
+<span class="nc" id="L33">        this.executor = executor;</span>
+<span class="nc" id="L34">    }</span>
+
+    public List&lt;LeaderboardEntry&gt; getReferralLeaderboard() {
+        // Task 3 Code Here
+<span class="nc" id="L38">        return null;</span>
+    }
+
+    public CustomerReferrals getCustomerReferralSummary(String customerId) {
+<span class="nc" id="L42">        CustomerReferrals referrals = new CustomerReferrals();</span>
+
+        // Task 2 Code Here
+
+<span class="nc" id="L46">        return referrals;</span>
+    }
+
+
+    public List&lt;Referral&gt; getDirectReferrals(String customerId) {
+<span class="fc" id="L51">        List&lt;ReferralRecord&gt; records = referralDao.findByReferrerId(customerId);</span>
+
+        // Task 1 Code Here
+
+<span class="fc" id="L55">        return null;</span>
+    }
+
+
+    public ReferralResponse addReferral(ReferralRequest referral) {
+<span class="pc bpc" id="L60" title="2 of 6 branches missed.">        if (referral == null || referral.getCustomerId() == null || referral.getCustomerId().length() == 0) {</span>
+<span class="fc" id="L61">            throw new InvalidDataException(&quot;Request must contain a valid Customer ID&quot;);</span>
+        }
+<span class="fc" id="L63">        ReferralRecord record = ReferralConverter.fromRequestToRecord(referral);</span>
+<span class="fc" id="L64">        referralDao.addReferral(record);</span>
+<span class="fc" id="L65">        return ReferralConverter.fromRecordToResponse(record);</span>
+    }
+
+    public boolean deleteReferrals(List&lt;String&gt; customerIds){
+<span class="nc" id="L69">        boolean allDeleted = true;</span>
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if(customerIds == null){</span>
+<span class="nc" id="L72">            throw new InvalidDataException(&quot;Request must contain a valid list of Customer ID&quot;);</span>
+        }
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        for(String customerId : customerIds){</span>
+<span class="nc bnc" id="L76" title="All 4 branches missed.">            if(customerId == null || customerId.length() == 0){</span>
+<span class="nc" id="L77">                throw new InvalidDataException(&quot;Customer ID cannot be null or empty to delete&quot;);</span>
+            }
+
+<span class="nc" id="L80">            ReferralRecord record = new ReferralRecord();</span>
+<span class="nc" id="L81">            record.setCustomerId(customerId);</span>
+
+<span class="nc" id="L83">            boolean deleted = referralDao.deleteReferral(record);</span>
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if(!deleted){</span>
+<span class="nc" id="L86">                allDeleted = false;</span>
+            }
+<span class="nc" id="L88">        }</span>
+<span class="nc" id="L89">        return allDeleted;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

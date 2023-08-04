@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReferralConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ReferralServiceLambda</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.referral.service.converter</a> &gt; <span class="el_source">ReferralConverter.java</span></div><h1>ReferralConverter.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.referral.service.converter;
+
+import com.kenzie.marketing.referral.model.Referral;
+import com.kenzie.marketing.referral.model.ReferralRequest;
+import com.kenzie.marketing.referral.model.ReferralResponse;
+import com.kenzie.marketing.referral.service.model.ReferralRecord;
+
+import java.time.ZonedDateTime;
+
+<span class="nc" id="L10">public class ReferralConverter {</span>
+
+<span class="fc" id="L12">    private static ZonedDateTimeConverter converter = new ZonedDateTimeConverter();</span>
+
+    public static ReferralRecord fromRequestToRecord(ReferralRequest referral) {
+<span class="fc" id="L15">        ReferralRecord record = new ReferralRecord();</span>
+<span class="fc" id="L16">        record.setCustomerId(referral.getCustomerId());</span>
+<span class="fc" id="L17">        record.setReferrerId(referral.getReferrerId());</span>
+<span class="fc" id="L18">        record.setDateReferred(ZonedDateTime.now());</span>
+<span class="fc" id="L19">        return record;</span>
+    }
+
+    public static ReferralResponse fromRecordToResponse(ReferralRecord record) {
+<span class="fc" id="L23">        ReferralResponse referral = new ReferralResponse();</span>
+<span class="fc" id="L24">        referral.setReferrerId(record.getReferrerId());</span>
+<span class="fc" id="L25">        referral.setCustomerId(record.getCustomerId());</span>
+<span class="fc" id="L26">        referral.setReferralDate(converter.convert(record.getDateReferred()));</span>
+<span class="fc" id="L27">        return referral;</span>
+    }
+
+    public static Referral fromRecordToReferral(ReferralRecord record) {
+<span class="nc" id="L31">        Referral referral = new Referral();</span>
+<span class="nc" id="L32">        referral.setCustomerId(record.getCustomerId());</span>
+<span class="nc" id="L33">        referral.setReferrerId(record.getReferrerId());</span>
+<span class="nc" id="L34">        referral.setReferralDate(new ZonedDateTimeConverter().convert(record.getDateReferred()));</span>
+<span class="nc" id="L35">        return referral;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

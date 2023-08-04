@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DynamoDbConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Application</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.application.config</a> &gt; <span class="el_source">DynamoDbConfig.java</span></div><h1>DynamoDbConfig.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.application.config;
+
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import org.socialsignin.spring.data.dynamodb.repository.config.EnableDynamoDBRepositories;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@EnableDynamoDBRepositories(basePackages = &quot;com.kenzie.marketing.application.repositories&quot;)
+<span class="nc" id="L14">public class DynamoDbConfig {</span>
+    @Value(&quot;${dynamodb.override_endpoint}&quot;)
+    String dynamoOverrideEndpoint;
+
+    @Bean
+    @ConditionalOnProperty(name = &quot;dynamodb.override_endpoint&quot;, havingValue = &quot;true&quot;)
+    public AmazonDynamoDB amazonDynamoDB(@Value(&quot;${dynamodb.endpoint}&quot;) String dynamoEndpoint) {
+<span class="nc" id="L21">        AwsClientBuilder.EndpointConfiguration endpointConfig = new</span>
+                AwsClientBuilder.EndpointConfiguration(dynamoEndpoint,
+                &quot;us-east-1&quot;);
+
+<span class="nc" id="L25">        return AmazonDynamoDBClientBuilder</span>
+<span class="nc" id="L26">                .standard()</span>
+<span class="nc" id="L27">                .withEndpointConfiguration(endpointConfig)</span>
+<span class="nc" id="L28">                .build();</span>
+
+    }
+
+    @Bean(name = &quot;amazonDynamoDB&quot;)
+    public AmazonDynamoDB defaultAmazonDynamoDb() {
+<span class="nc" id="L34">        return AmazonDynamoDBClientBuilder.defaultClient();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DynamoDbClientProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ReferralServiceLambda</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.referral.service.util</a> &gt; <span class="el_source">DynamoDbClientProvider.java</span></div><h1>DynamoDbClientProvider.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.referral.service.util;
+
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+
+/**
+ * Provides an {@code AmazonDynamoDB} client using default AWS credentials provider chain.
+ */
+<span class="nc" id="L11">public class DynamoDbClientProvider {</span>
+
+    /**
+     * Returns DynamoDB client using default region.
+     * @return AmazonDynamoDB
+     */
+    public static AmazonDynamoDB getDynamoDBClient() {
+<span class="nc" id="L18">        return getDynamoDBClient(Regions.US_EAST_1);</span>
+    }
+
+    /**
+     * Returns DynamoDB client using default region.
+     * @param region If present, will be used as the region for the DynamoDB client
+     * @return AmazonDynamoDB
+     */
+    public static AmazonDynamoDB getDynamoDBClient(Regions region) {
+<span class="nc bnc" id="L27" title="All 2 branches missed.">        if (null == region) {</span>
+<span class="nc" id="L28">            throw new IllegalArgumentException(&quot;region cannot be null&quot;);</span>
+        }
+
+<span class="nc" id="L31">        return AmazonDynamoDBClientBuilder</span>
+<span class="nc" id="L32">                .standard()</span>
+                // this will use multiple providers to look for AWS credentials
+<span class="nc" id="L34">                .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())</span>
+                // This should be the same region the CloudFormation stack with tables was deployed in
+<span class="nc" id="L36">                .withRegion(region)</span>
+<span class="nc" id="L37">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -1,5 +1,6 @@
 package com.kenzie.marketing.application.service;
 
+import com.kenzie.marketing.application.controller.CustomerController;
 import com.kenzie.marketing.application.controller.model.CreateCustomerRequest;
 import com.kenzie.marketing.application.controller.model.CustomerResponse;
 import com.kenzie.marketing.application.controller.model.LeaderboardUiEntry;
@@ -15,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -70,10 +73,45 @@ public class CustomerService {
      * @return A CustomerResponse describing the customer
      */
     public CustomerResponse addNewCustomer(CreateCustomerRequest createCustomerRequest) {
+        // 1: There are two options for the referrerId - it's either empty (meaning the customer joined by themselves)
+        // or contains a value (meaning another customer with that ID referred them).
+        // If the request contains a referrerId, then that must be a valid customer id from the table.
+        // If that referrerId does not exist in the Customer table, the request should be rejected.
+        // 2: The CustomerRecord should be created and saved into the Customer table. To create the customer ID,
+        // use a call to record.setId(randomUUID().toString()).
+        // 3: A call should be made to referralServiceClient.addReferral() to add the new customer.
+        // It is important that the referralServiceClient.addReferral() method is called for every customer
+        // added, even if they were not referred! If a customer had no referrer, you should still call
+        // addReferral() using a blank referrerId.
+        // 4:A response object should be created and returned with all the necessary information.
+        CustomerRecord customerRecord = new CustomerRecord();
+        customerRecord.setId(randomUUID().toString());
+        customerRecord.setDateCreated(LocalDateTime.now().toString()); //possible ZoneDateTime.now().toString()
+        customerRecord.setName(createCustomerRequest.getName());
 
-        // Task 1 - Add your code here
+        ReferralRequest referralRequest;
 
-        return null;
+        if(createCustomerRequest.getReferrerId().isEmpty()) {
+
+        referralRequest = new ReferralRequest(customerRecord.getId(), "");
+
+        }
+        else {
+            if (!customerRepository.existsById(createCustomerRequest.getReferrerId()
+                    .get())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer not found.");
+            } else {
+                customerRecord.setReferrerId(createCustomerRequest.getReferrerId().get());
+
+                referralRequest = new ReferralRequest(customerRecord.getId(),  createCustomerRequest
+                        .getReferrerId().get());
+
+            }
+        }
+        customerRepository.save(customerRecord);
+        referralServiceClient.addReferral(referralRequest);
+
+        return customerResponseHelp(customerRecord);
     }
 
     /**
@@ -147,6 +185,17 @@ public class CustomerService {
         Private Methods
        ----------------------------------------------------------------------------------------------------------- */
 
-    // Add any private methods here
+    private CustomerResponse customerResponseHelp (CustomerRecord customerRecord) {
+        CustomerResponse customerResponse = new CustomerResponse();
+        customerResponse.setName(customerRecord.getName());
+        customerResponse.setId(customerRecord.getId());
+        customerResponse.setDateJoined(customerRecord.getDateCreated());
+        customerResponse.setReferrerId(customerRecord.getReferrerId());
+        customerResponse.setReferrerName(customerRepository.findById(customerRecord.getReferrerId())
+                .map(CustomerRecord::getName)
+                .orElse(""));
+        return customerResponse;
+    }
+
 
 }

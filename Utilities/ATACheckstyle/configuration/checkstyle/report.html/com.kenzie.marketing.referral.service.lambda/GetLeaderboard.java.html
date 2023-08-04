@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GetLeaderboard.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ReferralServiceLambda</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.referral.service.lambda</a> &gt; <span class="el_source">GetLeaderboard.java</span></div><h1>GetLeaderboard.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.referral.service.lambda;
+
+import com.kenzie.marketing.referral.model.LeaderboardEntry;
+import com.kenzie.marketing.referral.service.ReferralService;
+import com.kenzie.marketing.referral.service.dependency.DaggerServiceComponent;
+import com.kenzie.marketing.referral.service.dependency.ServiceComponent;
+import com.kenzie.marketing.referral.service.exceptions.InvalidDataException;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+<span class="nc" id="L22">public class GetLeaderboard implements RequestHandler&lt;APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent&gt; {</span>
+
+<span class="nc" id="L24">    static final Logger log = LogManager.getLogger();</span>
+
+    @Override
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+<span class="nc" id="L28">        GsonBuilder builder = new GsonBuilder();</span>
+<span class="nc" id="L29">        Gson gson = builder.create();</span>
+
+<span class="nc" id="L31">        log.info(gson.toJson(input));</span>
+
+<span class="nc" id="L33">        ServiceComponent serviceComponent = DaggerServiceComponent.create();</span>
+<span class="nc" id="L34">        ReferralService referralService = serviceComponent.provideReferralService();</span>
+<span class="nc" id="L35">        Map&lt;String, String&gt; headers = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L36">        headers.put(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+
+<span class="nc" id="L38">        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()</span>
+<span class="nc" id="L39">                .withHeaders(headers);</span>
+
+        try {
+<span class="nc" id="L42">            List&lt;LeaderboardEntry&gt; leaderboard = referralService.getReferralLeaderboard();</span>
+<span class="nc" id="L43">            String output = gson.toJson(leaderboard);</span>
+
+<span class="nc" id="L45">            return response</span>
+<span class="nc" id="L46">                    .withStatusCode(200)</span>
+<span class="nc" id="L47">                    .withBody(output);</span>
+
+<span class="nc" id="L49">        } catch (InvalidDataException e) {</span>
+<span class="nc" id="L50">            return response</span>
+<span class="nc" id="L51">                    .withStatusCode(400)</span>
+<span class="nc" id="L52">                    .withBody(gson.toJson(e.errorPayload()));</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

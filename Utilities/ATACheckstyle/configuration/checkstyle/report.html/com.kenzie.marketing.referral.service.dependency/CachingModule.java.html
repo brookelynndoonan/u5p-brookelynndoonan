@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CachingModule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ReferralServiceLambda</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.referral.service.dependency</a> &gt; <span class="el_source">CachingModule.java</span></div><h1>CachingModule.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.referral.service.dependency;
+
+import com.kenzie.marketing.referral.service.caching.CacheClient;
+
+import dagger.Module;
+import dagger.Provides;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+@Module
+<span class="nc" id="L15">public class CachingModule {</span>
+    // DO NOT CHANGE ANYTHING IN THIS FILE!
+    // This file is set up to automatically select the correct Jedis URL based upon your current
+    // deployment configuration.  If you change anything here you risk breaking the connection to Jedis.
+
+    /**
+     * This method provides a JedisPool object used to connect to a Redis cache.
+     * @return A JedisPool object
+     */
+    @Provides
+    public static Jedis provideJedis() {
+<span class="nc" id="L26">        String redisUrl = System.getenv(&quot;JEDIS_URL&quot;);</span>
+<span class="nc bnc" id="L27" title="All 4 branches missed.">        if (redisUrl != null &amp;&amp; redisUrl.length() &gt; 0) {</span>
+            // Connect to AWS
+<span class="nc" id="L29">            System.out.println(&quot;Providing redis &quot; + redisUrl);</span>
+<span class="nc" id="L30">            return new Jedis(redisUrl, 6379, 20000);</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        } else if (&quot;true&quot;.equals(System.getenv(&quot;AWS_SAM_LOCAL&quot;))) {</span>
+            // Connect to local Docker redis
+<span class="nc" id="L33">            JedisPool pool = new JedisPool(new JedisPoolConfig(), &quot;redis-stack&quot;, 6379, 20000);</span>
+            try {
+<span class="nc" id="L35">                return pool.getResource();</span>
+<span class="nc" id="L36">            } catch (Exception e) {</span>
+<span class="nc" id="L37">                throw new IllegalStateException(&quot;Could not connect to the local redis container in docker.  &quot; +</span>
+                        &quot;Make sure that it is running and that you have configured the SAM CLI - Docker Network &quot; +
+                        &quot;property to contain kenzie-local inside of your run configuration.&quot;);
+            }
+        } else {
+            // Run Locally
+<span class="nc" id="L43">            System.out.println(&quot;Providing local redis&quot;);</span>
+<span class="nc" id="L44">            return new JedisPool(new JedisPoolConfig(), &quot;localhost&quot;, 6379, 20000).getResource();</span>
+        }
+    }
+
+    @Provides
+    @Singleton
+    @Named(&quot;CacheClient&quot;)
+    public CacheClient provideCacheClient() {
+<span class="nc" id="L52">        return new CacheClient();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
