@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReferralService {
 
@@ -22,71 +23,77 @@ public class ReferralService {
     private ExecutorService executor;
 
     @Inject
-<span class="fc" id="L25">    public ReferralService(ReferralDao referralDao) {</span>
-<span class="fc" id="L26">        this.referralDao = referralDao;</span>
-<span class="fc" id="L27">        this.executor = Executors.newCachedThreadPool();</span>
-<span class="fc" id="L28">    }</span>
+<span class="fc" id="L26">    public ReferralService(ReferralDao referralDao) {</span>
+<span class="fc" id="L27">        this.referralDao = referralDao;</span>
+<span class="fc" id="L28">        this.executor = Executors.newCachedThreadPool();</span>
+<span class="fc" id="L29">    }</span>
 
     // Necessary for testing, do not delete
-<span class="nc" id="L31">    public ReferralService(ReferralDao referralDao, ExecutorService executor) {</span>
-<span class="nc" id="L32">        this.referralDao = referralDao;</span>
-<span class="nc" id="L33">        this.executor = executor;</span>
-<span class="nc" id="L34">    }</span>
+<span class="nc" id="L32">    public ReferralService(ReferralDao referralDao, ExecutorService executor) {</span>
+<span class="nc" id="L33">        this.referralDao = referralDao;</span>
+<span class="nc" id="L34">        this.executor = executor;</span>
+<span class="nc" id="L35">    }</span>
 
     public List&lt;LeaderboardEntry&gt; getReferralLeaderboard() {
         // Task 3 Code Here
-<span class="nc" id="L38">        return null;</span>
+<span class="nc" id="L39">        return null;</span>
     }
 
     public CustomerReferrals getCustomerReferralSummary(String customerId) {
-<span class="nc" id="L42">        CustomerReferrals referrals = new CustomerReferrals();</span>
+<span class="nc" id="L43">        CustomerReferrals referrals = new CustomerReferrals();</span>
 
         // Task 2 Code Here
 
-<span class="nc" id="L46">        return referrals;</span>
+<span class="nc" id="L47">        return referrals;</span>
     }
 
 
     public List&lt;Referral&gt; getDirectReferrals(String customerId) {
-<span class="fc" id="L51">        List&lt;ReferralRecord&gt; records = referralDao.findByReferrerId(customerId);</span>
+<span class="fc" id="L52">        List&lt;ReferralRecord&gt; records = referralDao.findByReferrerId(customerId);</span>
 
+<span class="pc bpc" id="L54" title="2 of 4 branches missed.">        if(customerId == null || customerId.isEmpty()){</span>
+<span class="nc" id="L55">            throw new InvalidDataException(&quot;Request must contain a valid Customer ID.&quot;);</span>
+        }
         // Task 1 Code Here
 
-<span class="fc" id="L55">        return null;</span>
+<span class="fc" id="L59">        return records</span>
+<span class="fc" id="L60">                .stream()</span>
+<span class="fc" id="L61">                .map(ReferralConverter::fromRecordToReferral)</span>
+<span class="fc" id="L62">                .collect(Collectors.toList());</span>
     }
 
 
     public ReferralResponse addReferral(ReferralRequest referral) {
-<span class="pc bpc" id="L60" title="2 of 6 branches missed.">        if (referral == null || referral.getCustomerId() == null || referral.getCustomerId().length() == 0) {</span>
-<span class="fc" id="L61">            throw new InvalidDataException(&quot;Request must contain a valid Customer ID&quot;);</span>
+<span class="pc bpc" id="L67" title="2 of 6 branches missed.">        if (referral == null || referral.getCustomerId() == null || referral.getCustomerId().length() == 0) {</span>
+<span class="fc" id="L68">            throw new InvalidDataException(&quot;Request must contain a valid Customer ID&quot;);</span>
         }
-<span class="fc" id="L63">        ReferralRecord record = ReferralConverter.fromRequestToRecord(referral);</span>
-<span class="fc" id="L64">        referralDao.addReferral(record);</span>
-<span class="fc" id="L65">        return ReferralConverter.fromRecordToResponse(record);</span>
+<span class="fc" id="L70">        ReferralRecord record = ReferralConverter.fromRequestToRecord(referral);</span>
+<span class="fc" id="L71">        referralDao.addReferral(record);</span>
+<span class="fc" id="L72">        return ReferralConverter.fromRecordToResponse(record);</span>
     }
 
     public boolean deleteReferrals(List&lt;String&gt; customerIds){
-<span class="nc" id="L69">        boolean allDeleted = true;</span>
+<span class="nc" id="L76">        boolean allDeleted = true;</span>
 
-<span class="nc bnc" id="L71" title="All 2 branches missed.">        if(customerIds == null){</span>
-<span class="nc" id="L72">            throw new InvalidDataException(&quot;Request must contain a valid list of Customer ID&quot;);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        if(customerIds == null){</span>
+<span class="nc" id="L79">            throw new InvalidDataException(&quot;Request must contain a valid list of Customer ID&quot;);</span>
         }
 
-<span class="nc bnc" id="L75" title="All 2 branches missed.">        for(String customerId : customerIds){</span>
-<span class="nc bnc" id="L76" title="All 4 branches missed.">            if(customerId == null || customerId.length() == 0){</span>
-<span class="nc" id="L77">                throw new InvalidDataException(&quot;Customer ID cannot be null or empty to delete&quot;);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        for(String customerId : customerIds){</span>
+<span class="nc bnc" id="L83" title="All 4 branches missed.">            if(customerId == null || customerId.length() == 0){</span>
+<span class="nc" id="L84">                throw new InvalidDataException(&quot;Customer ID cannot be null or empty to delete&quot;);</span>
             }
 
-<span class="nc" id="L80">            ReferralRecord record = new ReferralRecord();</span>
-<span class="nc" id="L81">            record.setCustomerId(customerId);</span>
+<span class="nc" id="L87">            ReferralRecord record = new ReferralRecord();</span>
+<span class="nc" id="L88">            record.setCustomerId(customerId);</span>
 
-<span class="nc" id="L83">            boolean deleted = referralDao.deleteReferral(record);</span>
+<span class="nc" id="L90">            boolean deleted = referralDao.deleteReferral(record);</span>
 
-<span class="nc bnc" id="L85" title="All 2 branches missed.">            if(!deleted){</span>
-<span class="nc" id="L86">                allDeleted = false;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            if(!deleted){</span>
+<span class="nc" id="L93">                allDeleted = false;</span>
             }
-<span class="nc" id="L88">        }</span>
-<span class="nc" id="L89">        return allDeleted;</span>
+<span class="nc" id="L95">        }</span>
+<span class="nc" id="L96">        return allDeleted;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

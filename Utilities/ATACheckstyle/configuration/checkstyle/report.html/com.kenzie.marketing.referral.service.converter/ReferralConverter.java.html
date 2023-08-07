@@ -28,11 +28,11 @@ import java.time.ZonedDateTime;
     }
 
     public static Referral fromRecordToReferral(ReferralRecord record) {
-<span class="nc" id="L31">        Referral referral = new Referral();</span>
-<span class="nc" id="L32">        referral.setCustomerId(record.getCustomerId());</span>
-<span class="nc" id="L33">        referral.setReferrerId(record.getReferrerId());</span>
-<span class="nc" id="L34">        referral.setReferralDate(new ZonedDateTimeConverter().convert(record.getDateReferred()));</span>
-<span class="nc" id="L35">        return referral;</span>
+<span class="fc" id="L31">        Referral referral = new Referral();</span>
+<span class="fc" id="L32">        referral.setCustomerId(record.getCustomerId());</span>
+<span class="fc" id="L33">        referral.setReferrerId(record.getReferrerId());</span>
+<span class="fc" id="L34">        referral.setReferralDate(new ZonedDateTimeConverter().convert(record.getDateReferred()));</span>
+<span class="fc" id="L35">        return referral;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

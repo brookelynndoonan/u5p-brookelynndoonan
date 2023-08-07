@@ -206,6 +206,12 @@ public class CustomerServiceTest {
      *  customerService.deleteCustomer
      *  ------------------------------------------------------------------------ **/
 
-    // Write additional tests here
+    @Test
+    void deleteCustomer_isSuccessful() {
+        String customerId = "customerId";
+
+        customerRepository.deleteById(customerId);
+
+    }
 
 }

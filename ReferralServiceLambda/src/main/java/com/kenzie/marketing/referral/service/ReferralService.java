@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReferralService {
 
@@ -50,9 +51,14 @@ public class ReferralService {
     public List<Referral> getDirectReferrals(String customerId) {
         List<ReferralRecord> records = referralDao.findByReferrerId(customerId);
 
-        // Task 1 Code Here
+        if(customerId == null || customerId.isEmpty()){
+            throw new InvalidDataException("Request must contain a valid Customer ID.");
+        }
 
-        return null;
+        return records
+                .stream()
+                .map(ReferralConverter::fromRecordToReferral)
+                .collect(Collectors.toList());
     }
 
 
