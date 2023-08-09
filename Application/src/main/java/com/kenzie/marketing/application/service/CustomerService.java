@@ -66,6 +66,8 @@ public class CustomerService {
      * @param createCustomerRequest
      * @return A CustomerResponse describing the customer
      */
+
+    // Worked with Elise, Learning Coach.
     public CustomerResponse addNewCustomer(CreateCustomerRequest createCustomerRequest) {
 
         CustomerRecord customerRecord = new CustomerRecord();
@@ -110,8 +112,6 @@ public class CustomerService {
         customerRecord.setName(customerName);
         customerRepository.save(customerRecord);
 
-        // Task 1 - Add your code here
-
         return customerResponseHelp(customerRecord);
     }
 
@@ -147,14 +147,11 @@ public class CustomerService {
      */
     public List<CustomerResponse> getReferrals(String customerId) {
 
-        // Task 1 - Add your code here
-
-        return  referralServiceClient.getDirectReferrals(customerId)
-                .stream()
+        List<Referral> referrals = referralServiceClient.getDirectReferrals(customerId);
+        return referrals.stream()
                 .map(Referral::getCustomerId)
                 .map(this::getCustomer)
                 .collect(Collectors.toList());
-
     }
 
     /**

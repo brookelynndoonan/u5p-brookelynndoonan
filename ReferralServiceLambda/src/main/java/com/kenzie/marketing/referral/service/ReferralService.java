@@ -12,6 +12,8 @@ import com.kenzie.marketing.referral.service.model.ReferralRecord;
 
 import javax.inject.Inject;
 
+import java.sql.Ref;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.List;
@@ -39,24 +41,43 @@ public class ReferralService {
         return null;
     }
 
+    // Got help from Munir about nested loop concept.
+    // Elise helped me end the method more around the concept of collecting the referrals for second
+    // and third level,rather than trying to add them all together.
     public CustomerReferrals getCustomerReferralSummary(String customerId) {
+        if (customerId == null || customerId.isEmpty()) {
+            throw new InvalidDataException("Customer should not have null or empty Id.");
+        }
+        int amountFirstReferral = 0;
+        int amountSecondReferral = 0;
+        int amountThirdReferral = 0;
+
         CustomerReferrals referrals = new CustomerReferrals();
 
-        // Task 2 Code Here
+        List<Referral> firstLevel = getDirectReferrals(customerId);
+          referrals.setNumFirstLevelReferrals(firstLevel.size());
+
+        for (Referral firstReferralBatch : firstLevel) {
+            List<Referral> secondLevel = getDirectReferrals(firstReferralBatch.getCustomerId());
+            amountSecondReferral += secondLevel.size();
+
+            for (Referral secondReferralBatch : secondLevel) {
+                List<Referral> thirdLevel = getDirectReferrals(secondReferralBatch.getCustomerId());
+                amountThirdReferral += thirdLevel.size();
+            }
+        }
+
+        referrals.setNumSecondLevelReferrals(amountSecondReferral);
+        referrals.setNumThirdLevelReferrals(amountThirdReferral);
 
         return referrals;
     }
 
 
     public List<Referral> getDirectReferrals(String customerId) {
+
         List<ReferralRecord> records = referralDao.findByReferrerId(customerId);
-
-        if(customerId == null || customerId.isEmpty()){
-            throw new InvalidDataException("Request must contain a valid Customer ID.");
-        }
-
-        return records
-                .stream()
+        return records.stream()
                 .map(ReferralConverter::fromRecordToReferral)
                 .collect(Collectors.toList());
     }

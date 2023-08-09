@@ -3,8 +3,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Timeout: 300
-      MemorySize: 1152
-      Handler: com.kenzie.marketing.referral.service.lambda.DeleteReferrals
+      MemorySize: 1088
+      Handler: com.kenzie.marketing.referral.service.lambda.AddReferral
       CodeUri: C:\Users\bldoo\kenzie\Term4\u5p-brookelynndoonan\ReferralServiceLambda
       Runtime: java11
       Architectures:

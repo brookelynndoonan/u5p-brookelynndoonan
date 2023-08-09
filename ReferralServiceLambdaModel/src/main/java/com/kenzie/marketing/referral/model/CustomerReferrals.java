@@ -5,6 +5,7 @@ public class CustomerReferrals {
     private Integer numSecondLevelReferrals;
     private Integer numThirdLevelReferrals;
 
+
     public CustomerReferrals() {
         this.numFirstLevelReferrals = 0;
         this.numSecondLevelReferrals = 0;

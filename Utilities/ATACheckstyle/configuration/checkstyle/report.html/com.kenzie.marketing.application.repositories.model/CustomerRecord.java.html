@@ -8,7 +8,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import java.util.Objects;
 
 @DynamoDBTable(tableName = &quot;Customer&quot;)
-<span class="nc" id="L11">public class CustomerRecord {</span>
+<span class="fc" id="L11">public class CustomerRecord {</span>
     private String id;
     private String name;
     private String dateCreated;
@@ -16,35 +16,35 @@ import java.util.Objects;
 
     @DynamoDBHashKey(attributeName = &quot;Id&quot;)
     public String getId() {
-<span class="nc" id="L19">        return id;</span>
+<span class="fc" id="L19">        return id;</span>
     }
 
     @DynamoDBAttribute(attributeName = &quot;Name&quot;)
     public String getName() {
-<span class="nc" id="L24">        return name;</span>
+<span class="fc" id="L24">        return name;</span>
     }
 
     @DynamoDBAttribute(attributeName = &quot;DateCreated&quot;)
     public String getDateCreated() {
-<span class="nc" id="L29">        return dateCreated;</span>
+<span class="fc" id="L29">        return dateCreated;</span>
     }
 
     @DynamoDBAttribute(attributeName = &quot;ReferrerId&quot;)
     public String getReferrerId() {
-<span class="nc" id="L34">        return referrerId;</span>
+<span class="fc" id="L34">        return referrerId;</span>
     }
 
     public void setId(String id) {
-<span class="nc" id="L38">        this.id = id;</span>
-<span class="nc" id="L39">    }</span>
+<span class="fc" id="L38">        this.id = id;</span>
+<span class="fc" id="L39">    }</span>
 
     public void setName(String name) {
-<span class="nc" id="L42">        this.name = name;</span>
-<span class="nc" id="L43">    }</span>
+<span class="fc" id="L42">        this.name = name;</span>
+<span class="fc" id="L43">    }</span>
 
     public void setDateCreated(String dateCreated) {
-<span class="nc" id="L46">        this.dateCreated = dateCreated;</span>
-<span class="nc" id="L47">    }</span>
+<span class="fc" id="L46">        this.dateCreated = dateCreated;</span>
+<span class="fc" id="L47">    }</span>
 
     public void setReferrerId(String referrerId) {
 <span class="nc" id="L50">        this.referrerId = referrerId;</span>

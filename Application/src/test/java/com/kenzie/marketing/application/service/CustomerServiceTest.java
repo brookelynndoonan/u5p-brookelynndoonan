@@ -17,8 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 import static java.util.UUID.randomUUID;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -149,6 +151,21 @@ public class CustomerServiceTest {
         Assertions.assertNull(record.getReferrerId(), "The referrerId is null");
     }
 
+    @Test
+    void addNewCustomer_referrerIdDoesNotExist_throwResponseStatusException() {
+
+        String referrerId = "";
+
+
+        CreateCustomerRequest request = new CreateCustomerRequest();
+        request.setReferrerId(Optional.of(referrerId));
+
+        when(customerRepository.existsById(referrerId)).thenReturn(false);
+        assertThrows(ResponseStatusException.class,
+                () -> customerService.addNewCustomer(request));
+
+    }
+
     /** ------------------------------------------------------------------------
      *  customerService.updateCustomer
      *  ------------------------------------------------------------------------ **/
@@ -208,10 +225,25 @@ public class CustomerServiceTest {
 
     @Test
     void deleteCustomer_isSuccessful() {
-        String customerId = "customerId";
+        String customerId = randomUUID().toString();
 
-        customerRepository.deleteById(customerId);
+        // WHEN
+        customerService.deleteCustomer(customerId);
+
+        // THEN
+        verify(customerRepository).deleteById(customerId);
 
     }
+
+    @Test
+    void getReferrals_validCustomerId_isSuccessful() {
+        String customerId = "Customer";
+
+        customerService.getReferrals(customerId);
+
+        verify(referralServiceClient).getDirectReferrals(customerId);
+    }
+
+
 
 }
