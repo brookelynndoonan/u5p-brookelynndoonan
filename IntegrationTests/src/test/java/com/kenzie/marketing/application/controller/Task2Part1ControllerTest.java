@@ -23,7 +23,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @IntegrationTest
-public class Task2Part1ControllerTest {
+public class
+Task2Part1ControllerTest {
 
     @Autowired
     private MockMvc mvc;

@@ -12,11 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Ref;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -38,6 +36,7 @@ public class CustomerService {
 
     /**
      * findAllCustomers
+     *
      * @return A list of Customers
      */
     public List<CustomerResponse> findAllCustomers() {
@@ -48,21 +47,23 @@ public class CustomerService {
 
     /**
      * findByCustomerId
+     *
      * @param customerId
      * @return The Customer with the given customerId
      */
     public CustomerResponse getCustomer(String customerId) {
-            Optional<CustomerRecord> record = customerRepository.findById(customerId);
-            return record.map(this::customerResponseHelp)
-                    .orElse(null);
+        Optional<CustomerRecord> record = customerRepository.findById(customerId);
+        return record.map(this::customerResponseHelp)
+                .orElse(null);
 
     }
 
     /**
      * addNewCustomer
-     *
+     * <p>
      * This creates a new customer.  If the referrerId is included, the referrerId must be valid and have a
      * corresponding customer in the DB.  This posts the referrals to the referral service
+     *
      * @param createCustomerRequest
      * @return A CustomerResponse describing the customer
      */
@@ -77,18 +78,17 @@ public class CustomerService {
 
         ReferralRequest referralRequest;
 
-        if(createCustomerRequest.getReferrerId().isEmpty()) {
+        if (createCustomerRequest.getReferrerId().isEmpty()) {
 
-        referralRequest = new ReferralRequest(customerRecord.getId(), "");
-        }
-        else {
+            referralRequest = new ReferralRequest(customerRecord.getId(), "");
+        } else {
             if (!customerRepository.existsById(createCustomerRequest.getReferrerId()
                     .get())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Customer not found.");
             } else {
                 customerRecord.setReferrerId(createCustomerRequest.getReferrerId().get());
 
-                referralRequest = new ReferralRequest(customerRecord.getId(),  createCustomerRequest
+                referralRequest = new ReferralRequest(customerRecord.getId(), createCustomerRequest
                         .getReferrerId().get());
             }
         }
@@ -100,7 +100,8 @@ public class CustomerService {
 
     /**
      * updateCustomer - This updates the customer name for the given customer id
-     * @param customerId - The Id of the customer to update
+     *
+     * @param customerId   - The Id of the customer to update
      * @param customerName - The new name for the customer
      */
     public CustomerResponse updateCustomer(String customerId, String customerName) {
@@ -117,6 +118,7 @@ public class CustomerService {
 
     /**
      * deleteCustomer - This deletes the customer record for the given customer id
+     *
      * @param customerId
      */
     public void deleteCustomer(String customerId) {
@@ -126,6 +128,7 @@ public class CustomerService {
     /**
      * calculateBonus - This calculates the referral bonus for the given customer according to the referral bonus
      * constants.
+     *
      * @param customerId
      * @return
      */
@@ -142,6 +145,7 @@ public class CustomerService {
     /**
      * getReferrals - This returns a list of referral entries for every customer directly referred by the given
      * customerId.
+     *
      * @param customerId
      * @return
      */
@@ -156,29 +160,33 @@ public class CustomerService {
 
     /**
      * getLeaderboard - This calls the referral service to retrieve the current top 5 leaderboard of the most referrals
+     *
      * @return
      */
     public List<LeaderboardUiEntry> getLeaderboard() {
+        List<LeaderboardEntry> leaderboardUiEntries = referralServiceClient.getLeaderboard();
 
-        // Task 2 - Add your code here
-
-        return null;
+        return leaderboardUiEntries
+                .stream()
+                .map(entries -> new LeaderboardUiEntry(entries.getCustomerId(), entries.getCustomerId(),
+                        entries.getNumReferrals()))
+                .collect(Collectors.toList());
     }
 
     /* -----------------------------------------------------------------------------------------------------------
         Private Methods
        ----------------------------------------------------------------------------------------------------------- */
 
-    private CustomerResponse customerResponseHelp (CustomerRecord customerRecord) {
+    private CustomerResponse customerResponseHelp(CustomerRecord customerRecord) {
         CustomerResponse customerResponse = new CustomerResponse();
         customerResponse.setName(customerRecord.getName());
         customerResponse.setId(customerRecord.getId());
         customerResponse.setDateJoined(customerRecord.getDateCreated());
         customerResponse.setReferrerId(customerRecord.getReferrerId());
 
-        if(customerRecord.getReferrerId() == null){
-           customerResponse.setReferrerName("");
-        } else{
+        if (customerRecord.getReferrerId() == null) {
+            customerResponse.setReferrerName("");
+        } else {
 
             customerResponse.setReferrerName(customerRepository.findById(customerRecord.getReferrerId())
                     .map(CustomerRecord::getName)

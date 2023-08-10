@@ -36,13 +36,43 @@ public class ReferralService {
         this.executor = executor;
     }
 
+    // Worked with Munir on building the Referral Leaderboard
     public List<LeaderboardEntry> getReferralLeaderboard() {
-        // Task 3 Code Here
-        return null;
+
+        List<LeaderboardEntry> topReferrals = new ArrayList<>();
+        List<ReferralRecord> customerIDs = referralDao.findUsersWithoutReferrerId();
+
+        for (ReferralRecord customerId : customerIDs) {
+            int numReferrals = getDirectReferrals(customerId.getCustomerId()).size();
+
+            LeaderboardEntry newEntry = new LeaderboardEntry(numReferrals, customerId.getCustomerId());
+
+            if (topReferrals.isEmpty()) {
+                topReferrals.add(newEntry);
+            } else {
+                int leaderboardReferrals = referralCountHelperMethod(topReferrals, numReferrals);
+                if (leaderboardReferrals >= 0 && leaderboardReferrals < 5) {
+                    topReferrals.add(leaderboardReferrals, newEntry);
+                    if (topReferrals.size() > 5) {
+                        topReferrals.remove(5);
+                    }
+                }
+            }
+        }
+        return topReferrals;
+    }
+
+    private int referralCountHelperMethod(List<LeaderboardEntry> leaderboard, int newReferrals) {
+        for (int i = 0; i < leaderboard.size(); i++) {
+            if (newReferrals > leaderboard.get(i).getNumReferrals()) {
+                return i;
+            }
+        }
+        return leaderboard.size();
     }
 
     // Got help from Munir about nested loop concept.
-    // Elise helped me end the method more around the concept of collecting the referrals for second
+    // Elise helped me end the method, more around the concept of collecting the referrals for second
     // and third level,rather than trying to add them all together.
     public CustomerReferrals getCustomerReferralSummary(String customerId) {
         if (customerId == null || customerId.isEmpty()) {
@@ -55,7 +85,7 @@ public class ReferralService {
         CustomerReferrals referrals = new CustomerReferrals();
 
         List<Referral> firstLevel = getDirectReferrals(customerId);
-          referrals.setNumFirstLevelReferrals(firstLevel.size());
+        referrals.setNumFirstLevelReferrals(firstLevel.size());
 
         for (Referral firstReferralBatch : firstLevel) {
             List<Referral> secondLevel = getDirectReferrals(firstReferralBatch.getCustomerId());
@@ -66,7 +96,6 @@ public class ReferralService {
                 amountThirdReferral += thirdLevel.size();
             }
         }
-
         referrals.setNumSecondLevelReferrals(amountSecondReferral);
         referrals.setNumThirdLevelReferrals(amountThirdReferral);
 
@@ -92,15 +121,15 @@ public class ReferralService {
         return ReferralConverter.fromRecordToResponse(record);
     }
 
-    public boolean deleteReferrals(List<String> customerIds){
+    public boolean deleteReferrals(List<String> customerIds) {
         boolean allDeleted = true;
 
-        if(customerIds == null){
+        if (customerIds == null) {
             throw new InvalidDataException("Request must contain a valid list of Customer ID");
         }
 
-        for(String customerId : customerIds){
-            if(customerId == null || customerId.length() == 0){
+        for (String customerId : customerIds) {
+            if (customerId == null || customerId.length() == 0) {
                 throw new InvalidDataException("Customer ID cannot be null or empty to delete");
             }
 
@@ -109,7 +138,7 @@ public class ReferralService {
 
             boolean deleted = referralDao.deleteReferral(record);
 
-            if(!deleted){
+            if (!deleted) {
                 allDeleted = false;
             }
         }
