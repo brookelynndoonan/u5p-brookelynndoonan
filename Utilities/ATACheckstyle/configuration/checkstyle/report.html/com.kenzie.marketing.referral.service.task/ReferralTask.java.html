@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReferralTask.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ReferralServiceLambda</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.referral.service.task</a> &gt; <span class="el_source">ReferralTask.java</span></div><h1>ReferralTask.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.referral.service.task;
+
+import com.kenzie.marketing.referral.model.LeaderboardEntry;
+import com.kenzie.marketing.referral.service.ReferralService;
+import com.kenzie.marketing.referral.service.dao.ReferralDao;
+import com.kenzie.marketing.referral.service.model.ReferralRecord;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
+public class ReferralTask implements Callable {
+    private ReferralDao referralDao;
+    private ReferralRecord referralNode;
+    private ReferralService referralService;
+
+<span class="nc" id="L17">    public ReferralTask(ReferralDao referralDao, ReferralRecord referralRecord, ReferralService referralService) {</span>
+<span class="nc" id="L18">        this.referralDao = referralDao;</span>
+<span class="nc" id="L19">        this.referralNode = referralRecord;</span>
+<span class="nc" id="L20">        this.referralService = referralService;</span>
+<span class="nc" id="L21">    }</span>
+
+    @Override
+    public List&lt;LeaderboardEntry&gt; call() {
+
+<span class="nc" id="L26">        List&lt;ReferralRecord&gt; customerIDs = referralDao.findUsersWithoutReferrerId();</span>
+<span class="nc" id="L27">        List&lt;LeaderboardEntry&gt; topReferrals = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        for (ReferralRecord customerId : customerIDs) {</span>
+<span class="nc" id="L30">            int numReferrals = referralService.getDirectReferrals(customerId.getCustomerId()).size();</span>
+
+<span class="nc" id="L32">            LeaderboardEntry newEntry = new LeaderboardEntry(numReferrals, customerId.getCustomerId());</span>
+
+<span class="nc bnc" id="L34" title="All 2 branches missed.">            if (topReferrals.isEmpty()) {</span>
+<span class="nc" id="L35">                topReferrals.add(newEntry);</span>
+            } else {
+<span class="nc" id="L37">                int leaderboardReferrals = referralCountHelperMethod(topReferrals, numReferrals);</span>
+<span class="nc bnc" id="L38" title="All 4 branches missed.">                if (leaderboardReferrals &gt;= 0 &amp;&amp; leaderboardReferrals &lt; 5) {</span>
+<span class="nc" id="L39">                    topReferrals.add(leaderboardReferrals, newEntry);</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">                    if (topReferrals.size() &gt; 5) {</span>
+<span class="nc" id="L41">                        topReferrals.remove(5);</span>
+                    }
+                }
+            }
+<span class="nc" id="L45">        }</span>
+<span class="nc" id="L46">        return topReferrals;</span>
+    }
+
+    private int referralCountHelperMethod(List&lt;LeaderboardEntry&gt; leaderboard, int newReferrals) {
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        for (int i = 0; i &lt; leaderboard.size(); i++) {</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">            if (newReferrals &gt; leaderboard.get(i).getNumReferrals()) {</span>
+<span class="nc" id="L52">                return i;</span>
+            }
+        }
+<span class="nc" id="L55">        return leaderboard.size();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

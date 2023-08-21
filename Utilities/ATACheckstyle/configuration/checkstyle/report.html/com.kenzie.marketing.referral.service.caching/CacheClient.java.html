@@ -3,21 +3,43 @@
 import com.kenzie.marketing.referral.service.dependency.DaggerServiceComponent;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
-public class CacheClient {
+import javax.inject.Inject;
+import java.util.Optional;
 
-<span class="nc" id="L9">    public CacheClient() {}</span>
+<span class="nc" id="L11">public class CacheClient {</span>
 
-    // Put your Cache Client Here
+    public String setValue(String key, int seconds, String value) {
+<span class="nc bnc" id="L14" title="All 2 branches missed.">        if (key == null) {</span>
+<span class="nc" id="L15">            throw new IllegalArgumentException();</span>
+        }
+<span class="nc" id="L17">        try (Jedis jedis = DaggerServiceComponent.create().provideJedis()) {</span>
+<span class="nc" id="L18">            jedis.setex(key, seconds, String.valueOf(value));</span>
+        }
+<span class="nc" id="L20">        return key;</span>
+    }
 
-    // Since Jedis is being used multithreaded, you MUST get a new Jedis instances and close it inside every method.
-    // Do NOT use a single instance across multiple of these methods
+    public Optional&lt;String&gt; getValue(String key) {
+<span class="nc" id="L24">        try (Jedis jedis = DaggerServiceComponent.create().provideJedis()) {</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">            if (key == null) {</span>
+<span class="nc" id="L26">                throw new IllegalArgumentException();</span>
+            }
+<span class="nc" id="L28">            return Optional.ofNullable(jedis.get(key));</span>
+        }
+    }
 
-    // Use Jedis in each method by doing the following:
-    // Jedis cache = DaggerServiceComponent.create().provideJedis();
-    // ... use the cache
-    // cache.close();
-
-    // Remember to check for null keys!
+    public boolean invalidate(String key) {
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        if (key == null) {</span>
+<span class="nc" id="L34">            throw new IllegalArgumentException(&quot;Key cannot be null.&quot;);</span>
+        }
+<span class="nc" id="L36">        try (Jedis jedis = DaggerServiceComponent.create().provideJedis()) {</span>
+<span class="nc" id="L37">            Long keyExists = jedis.del(key);</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            if (keyExists &gt; 0) {</span>
+<span class="nc" id="L39">                return true;</span>
+            }
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        }</span>
+<span class="nc" id="L42">        return false;</span>
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

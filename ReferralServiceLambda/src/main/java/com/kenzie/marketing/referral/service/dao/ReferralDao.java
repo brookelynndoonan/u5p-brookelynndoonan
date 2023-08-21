@@ -18,64 +18,12 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
-public class ReferralDao {
-    private DynamoDBMapper mapper;
-    static final Logger log = LogManager.getLogger();
+public interface ReferralDao {
+    ReferralRecord addReferral(ReferralRecord referral);
 
-    /**
-     * Allows access to and manipulation of Match objects from the data store.
-     * @param mapper Access to DynamoDB
-     */
-    public ReferralDao(DynamoDBMapper mapper) {
-        this.mapper = mapper;
-    }
+    public boolean deleteReferral(ReferralRecord referral);
 
-    public ReferralRecord addReferral(ReferralRecord referral) {
-        try {
-            mapper.save(referral, new DynamoDBSaveExpression()
-                    .withExpected(ImmutableMap.of(
-                            "CustomerId",
-                            new ExpectedAttributeValue().withExists(false)
-                    )));
-        } catch (ConditionalCheckFailedException e) {
-            throw new InvalidDataException("Customer has already been referred");
-        }
+    List<ReferralRecord> findByReferrerId(String referrerId);
 
-        return referral;
-    }
-
-    public boolean deleteReferral(ReferralRecord referral) {
-        try {
-            mapper.delete(referral, new DynamoDBDeleteExpression()
-                    .withExpected(ImmutableMap.of(
-                            "CustomerId",
-                            new ExpectedAttributeValue().withValue(new AttributeValue(referral.getCustomerId())).withExists(true)
-                    )));
-        } catch (AmazonDynamoDBException e) {
-            log.info(e.getMessage());
-            log.info(e.getStackTrace());
-            return false;
-        }
-
-        return true;
-    }
-
-    public List<ReferralRecord> findByReferrerId(String referrerId) {
-        ReferralRecord referralRecord = new ReferralRecord();
-        referralRecord.setReferrerId(referrerId);
-
-        DynamoDBQueryExpression<ReferralRecord> queryExpression = new DynamoDBQueryExpression<ReferralRecord>()
-                .withHashKeyValues(referralRecord)
-                .withIndexName("ReferrerIdIndex")
-                .withConsistentRead(false);
-
-        return mapper.query(ReferralRecord.class, queryExpression);
-    }
-
-    public List<ReferralRecord> findUsersWithoutReferrerId() {
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression()
-                .withFilterExpression("attribute_not_exists(ReferrerId)");
-
-        return mapper.scan(ReferralRecord.class, scanExpression);
-    }
+    List<ReferralRecord> findUsersWithoutReferrerId();
 }

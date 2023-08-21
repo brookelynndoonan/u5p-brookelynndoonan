@@ -1,14 +1,13 @@
 package com.kenzie.marketing.referral.service;
 
 
-import com.kenzie.marketing.referral.model.Referral;
-import com.kenzie.marketing.referral.model.ReferralRequest;
-import com.kenzie.marketing.referral.model.ReferralResponse;
+import com.kenzie.marketing.referral.model.*;
 import com.kenzie.marketing.referral.service.converter.ZonedDateTimeConverter;
 import com.kenzie.marketing.referral.service.dao.ReferralDao;
 import com.kenzie.marketing.referral.service.exceptions.InvalidDataException;
 import com.kenzie.marketing.referral.service.model.ReferralRecord;
 import net.andreinc.mockneat.MockNeat;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -16,9 +15,12 @@ import org.mockito.ArgumentCaptor;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.sql.Ref;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,9 +35,11 @@ import static org.mockito.Mockito.when;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ReferralServiceTest {
 
-    /** ------------------------------------------------------------------------
-     *  expenseService.getExpenseById
-     *  ------------------------------------------------------------------------ **/
+    /**
+     * ------------------------------------------------------------------------
+     * expenseService.getExpenseById
+     * ------------------------------------------------------------------------
+     **/
 
     private ReferralDao referralDao;
     private ReferralService referralService;
@@ -85,7 +89,7 @@ class ReferralServiceTest {
         request.setReferrerId(referrerId);
 
         // WHEN / THEN
-        assertThrows(InvalidDataException.class, ()->this.referralService.addReferral(request));
+        assertThrows(InvalidDataException.class, () -> this.referralService.addReferral(request));
     }
 
     @Test
@@ -129,6 +133,63 @@ class ReferralServiceTest {
         }
     }
 
-    // Write additional tests here
+    @Test
+    void getCustomerReferralSummary_returnReferrals_isSuccessful() {
+        int amountReferral1 = 0;
+        int amountReferral2 = 0;
+        int amountReferral3 = 0;
+        String customerId = "customerId";
+        String referrerId = "referrerId";
+        CustomerReferrals referral = new CustomerReferrals();
+
+        Referral directReferrals = new Referral();
+        List<Referral> referrals1 = referralService.getDirectReferrals(customerId);
+        referrals1.add(directReferrals);
+
+        referralDao.findByReferrerId(referrerId);
+        referral.setNumFirstLevelReferrals(amountReferral1);
+        referral.setNumSecondLevelReferrals(amountReferral2);
+        referral.setNumThirdLevelReferrals(amountReferral3);
+
+        Assertions.assertNotNull(referralService.getCustomerReferralSummary(customerId));
+
+    }
+
+    @Test
+    void getCustomerReferralSummary_customerIdNull_throwException() {
+        String customerId = "";
+        assertThrows(InvalidDataException.class,
+                () -> referralService.getCustomerReferralSummary(customerId));
+    }
+
+    @Test
+    void deleteReferrals_listCustomerIdsIsNull() {
+        List<String> customerIds = null;
+        assertThrows(InvalidDataException.class,
+                () -> referralService.deleteReferrals(customerIds));
+    }
+
+    @Test
+    void deleteReferrals_deletesRecord() {
+        ReferralRecord referralRecord = new ReferralRecord();
+        String customerId = "customerId";
+        List<String> customerIds = new ArrayList<>();
+        customerIds.add(customerId);
+
+        when(referralDao.deleteReferral(referralRecord)).thenReturn(true);
+
+        Assertions.assertFalse(referralService.deleteReferrals(customerIds));
+
+    }
+
+    @Test
+    void deleteReferrals_customerIdIsNull() {
+        List<String> customerIds = new ArrayList<>();
+        customerIds.add(null);
+
+        assertThrows(InvalidDataException.class,
+                () -> referralService.deleteReferrals(customerIds));
+    }
+
 
 }

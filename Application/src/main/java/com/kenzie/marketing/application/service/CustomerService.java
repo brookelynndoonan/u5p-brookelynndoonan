@@ -73,7 +73,7 @@ public class CustomerService {
 
         CustomerRecord customerRecord = new CustomerRecord();
         customerRecord.setId(randomUUID().toString());
-        customerRecord.setDateCreated(LocalDateTime.now().toString()); //possible ZoneDateTime.now().toString()
+        customerRecord.setDateCreated(LocalDateTime.now().toString());
         customerRecord.setName(createCustomerRequest.getName());
 
         ReferralRequest referralRequest;

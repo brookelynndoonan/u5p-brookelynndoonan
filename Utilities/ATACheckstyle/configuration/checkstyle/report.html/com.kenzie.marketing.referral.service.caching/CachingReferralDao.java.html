@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CachingReferralDao.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ReferralServiceLambda</a> &gt; <a href="index.source.html" class="el_package">com.kenzie.marketing.referral.service.caching</a> &gt; <span class="el_source">CachingReferralDao.java</span></div><h1>CachingReferralDao.java</h1><pre class="source lang-java linenums">package com.kenzie.marketing.referral.service.caching;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import com.kenzie.marketing.referral.service.dao.NonCachingReferralDao;
+import com.kenzie.marketing.referral.service.dao.ReferralDao;
+import com.kenzie.marketing.referral.service.model.ReferralRecord;
+
+import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+// Got some help from Michael about where to put the Gson and Gson methods
+// and the findByReferrerId method
+public class CachingReferralDao implements ReferralDao {
+    private static final int REFERRAL_READ_TTL = 60 * 60;
+
+    private final CacheClient cacheClient;
+
+    private final NonCachingReferralDao nonCachingReferralDao;
+
+<span class="nc" id="L27">    private static String referenceKey = &quot;ReferenceKey::&quot;;</span>
+
+<span class="nc" id="L29">    public CachingReferralDao(CacheClient cacheClient, NonCachingReferralDao nonCachingReferralDao) {</span>
+<span class="nc" id="L30">        this.cacheClient = cacheClient;</span>
+<span class="nc" id="L31">        this.nonCachingReferralDao = nonCachingReferralDao;</span>
+<span class="nc" id="L32">    }</span>
+
+<span class="nc" id="L34">    GsonBuilder builder = new GsonBuilder().registerTypeAdapter(</span>
+            ZonedDateTime.class,
+<span class="nc" id="L36">            new TypeAdapter&lt;ZonedDateTime&gt;() {</span>
+                @Override
+                public void write(JsonWriter out, ZonedDateTime value) throws IOException {
+<span class="nc" id="L39">                    out.value(value.toString());</span>
+<span class="nc" id="L40">                }</span>
+
+                @Override
+                public ZonedDateTime read(JsonReader in) throws IOException {
+<span class="nc" id="L44">                    return ZonedDateTime.parse(in.nextString());</span>
+                }
+            }
+<span class="nc" id="L47">    ).enableComplexMapKeySerialization();</span>
+
+<span class="nc" id="L49">    Gson gson = builder.create();</span>
+
+    private List&lt;ReferralRecord&gt; fromJson(String json) {
+<span class="nc" id="L52">        return gson.fromJson(json, new TypeToken&lt;ArrayList&lt;ReferralRecord&gt;&gt;() {</span>
+<span class="nc" id="L53">        }.getType());</span>
+    }
+
+    // Setting value
+    private void addToCache(List&lt;ReferralRecord&gt; records) {
+<span class="nc" id="L58">        cacheClient.setValue(referenceKey,</span>
+                REFERRAL_READ_TTL,
+<span class="nc" id="L60">                gson.toJson(records)</span>
+        );
+<span class="nc" id="L62">    }</span>
+
+    /**
+     * Allows access to and manipulation of Match objects from the data store.
+     */
+
+    public ReferralRecord addReferral(ReferralRecord referral) {
+<span class="nc" id="L69">        referenceKey += referral.getCustomerId();</span>
+<span class="nc" id="L70">        cacheClient.invalidate(referenceKey);</span>
+<span class="nc" id="L71">        return nonCachingReferralDao.addReferral(referral);</span>
+    }
+
+    public boolean deleteReferral(ReferralRecord referral) {
+<span class="nc" id="L75">        referenceKey += referral.getReferrerId();</span>
+<span class="nc" id="L76">        cacheClient.invalidate(referenceKey);</span>
+<span class="nc" id="L77">        return nonCachingReferralDao.deleteReferral(referral);</span>
+    }
+
+    public List&lt;ReferralRecord&gt; findByReferrerId(String referrerId) {
+<span class="nc" id="L81">        referenceKey += referrerId;</span>
+
+<span class="nc" id="L83">        return cacheClient.getValue(referrerId)</span>
+<span class="nc" id="L84">                .map(this::fromJson)</span>
+<span class="nc" id="L85">                .orElseGet(() -&gt; {</span>
+<span class="nc" id="L86">                    List&lt;ReferralRecord&gt; referralRecords = nonCachingReferralDao.findByReferrerId(referrerId);</span>
+<span class="nc" id="L87">                    addToCache(referralRecords);</span>
+<span class="nc" id="L88">                    return referralRecords;</span>
+                });
+    }
+
+    public List&lt;ReferralRecord&gt; findUsersWithoutReferrerId() {
+
+<span class="nc" id="L94">        return nonCachingReferralDao.findUsersWithoutReferrerId();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

@@ -14,9 +14,11 @@ import javax.inject.Inject;
 
 import java.sql.Ref;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 public class ReferralService {
@@ -36,32 +38,46 @@ public class ReferralService {
         this.executor = executor;
     }
 
-    // Worked with Munir on building the Referral Leaderboard
+    // Worked extensively with Munir on this project and are proud of our work! This is by far,
+    // The most time-consuming, mind-bending assignment we've had this year.
     public List<LeaderboardEntry> getReferralLeaderboard() {
-
-        List<LeaderboardEntry> topReferrals = new ArrayList<>();
         List<ReferralRecord> customerIDs = referralDao.findUsersWithoutReferrerId();
+        List<Future<LeaderboardEntry>> threadFutures = new ArrayList<>();
+        List<LeaderboardEntry> topReferrals = new ArrayList<>();
 
         for (ReferralRecord customerId : customerIDs) {
-            int numReferrals = getDirectReferrals(customerId.getCustomerId()).size();
+            threadFutures.add(
+                    executor.submit(() -> {
+                        int numReferrals = getDirectReferrals(customerId.getCustomerId()).size();
+                        return new LeaderboardEntry(numReferrals, customerId.getCustomerId());
+                    })
+            );
+        }
 
-            LeaderboardEntry newEntry = new LeaderboardEntry(numReferrals, customerId.getCustomerId());
-
-            if (topReferrals.isEmpty()) {
-                topReferrals.add(newEntry);
-            } else {
-                int leaderboardReferrals = referralCountHelperMethod(topReferrals, numReferrals);
-                if (leaderboardReferrals >= 0 && leaderboardReferrals < 5) {
-                    topReferrals.add(leaderboardReferrals, newEntry);
-                    if (topReferrals.size() > 5) {
-                        topReferrals.remove(5);
+        for (Future<LeaderboardEntry> taskFuture : threadFutures) {
+            try {
+                LeaderboardEntry entry = taskFuture.get();
+                if (entry != null) {
+                    int leaderboardReferrals = referralCountHelperMethod(topReferrals, entry.getNumReferrals());
+                    if (leaderboardReferrals >= 0 && leaderboardReferrals < 5) {
+                        topReferrals.add(leaderboardReferrals, entry);
+                        if (topReferrals.size() > 5) {
+                            topReferrals.remove(5);
+                        }
                     }
                 }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
             }
         }
+
+        executor.shutdown();
+
         return topReferrals;
     }
 
+
+    // Helper
     private int referralCountHelperMethod(List<LeaderboardEntry> leaderboard, int newReferrals) {
         for (int i = 0; i < leaderboard.size(); i++) {
             if (newReferrals > leaderboard.get(i).getNumReferrals()) {
@@ -70,6 +86,7 @@ public class ReferralService {
         }
         return leaderboard.size();
     }
+
 
     // Got help from Munir about nested loop concept.
     // Elise helped me end the method, more around the concept of collecting the referrals for second

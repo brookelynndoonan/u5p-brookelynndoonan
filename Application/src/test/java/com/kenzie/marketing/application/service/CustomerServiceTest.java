@@ -5,6 +5,8 @@ import com.kenzie.marketing.application.controller.model.CustomerResponse;
 import com.kenzie.marketing.application.repositories.CustomerRepository;
 import com.kenzie.marketing.application.repositories.model.CustomerRecord;
 
+import com.kenzie.marketing.referral.model.CustomerReferrals;
+import com.kenzie.marketing.referral.model.LeaderboardEntry;
 import com.kenzie.marketing.referral.model.client.ReferralServiceClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,9 +40,11 @@ public class CustomerServiceTest {
         customerService = new CustomerService(customerRepository, referralServiceClient);
     }
 
-    /** ------------------------------------------------------------------------
-     *  customerService.findAllCustomers
-     *  ------------------------------------------------------------------------ **/
+    /**
+     * ------------------------------------------------------------------------
+     * customerService.findAllCustomers
+     * ------------------------------------------------------------------------
+     **/
 
     @Test
     void findAllCustomers_two_customers() {
@@ -82,9 +86,11 @@ public class CustomerServiceTest {
         }
     }
 
-    /** ------------------------------------------------------------------------
-     *  customerService.findByCustomerId
-     *  ------------------------------------------------------------------------ **/
+    /**
+     * ------------------------------------------------------------------------
+     * customerService.findByCustomerId
+     * ------------------------------------------------------------------------
+     **/
 
     @Test
     void getCustomer() {
@@ -120,9 +126,11 @@ public class CustomerServiceTest {
         Assertions.assertNull(customer, "The customer is null when not found");
     }
 
-    /** ------------------------------------------------------------------------
-     *  customerService.addNewCustomer
-     *  ------------------------------------------------------------------------ **/
+    /**
+     * ------------------------------------------------------------------------
+     * customerService.addNewCustomer
+     * ------------------------------------------------------------------------
+     **/
     @Test
     void addNewCustomer() {
         // GIVEN
@@ -166,9 +174,11 @@ public class CustomerServiceTest {
 
     }
 
-    /** ------------------------------------------------------------------------
-     *  customerService.updateCustomer
-     *  ------------------------------------------------------------------------ **/
+    /**
+     * ------------------------------------------------------------------------
+     * customerService.updateCustomer
+     * ------------------------------------------------------------------------
+     **/
 
     @Test
     void updateCustomer() {
@@ -213,15 +223,17 @@ public class CustomerServiceTest {
         // THEN
         try {
             verify(customerRepository, never()).save(Matchers.any());
-        } catch(MockitoAssertionError error) {
+        } catch (MockitoAssertionError error) {
             throw new MockitoAssertionError("There should not be a call to .save() if the customer is not found in the database. - " + error);
         }
 
     }
 
-    /** ------------------------------------------------------------------------
-     *  customerService.deleteCustomer
-     *  ------------------------------------------------------------------------ **/
+    /**
+     * ------------------------------------------------------------------------
+     * customerService.deleteCustomer
+     * ------------------------------------------------------------------------
+     **/
 
     @Test
     void deleteCustomer_isSuccessful() {
@@ -236,6 +248,20 @@ public class CustomerServiceTest {
     }
 
     @Test
+    void calculateBonus_result() {
+        String customerId = "customerId";
+        CustomerReferrals customerReferrals = new CustomerReferrals();
+        Integer service1 = customerReferrals.getNumFirstLevelReferrals();
+        Integer service2 = customerReferrals.getNumSecondLevelReferrals();
+        Integer service3 = customerReferrals.getNumThirdLevelReferrals();
+        Integer calculateResult = service1 + service2 + service3;
+
+        when(referralServiceClient.getReferralSummary(customerId)).thenReturn(customerReferrals);
+
+        Assertions.assertNotNull(customerService.calculateBonus(customerId));
+    }
+
+    @Test
     void getReferrals_validCustomerId_isSuccessful() {
         String customerId = "Customer";
 
@@ -244,6 +270,16 @@ public class CustomerServiceTest {
         verify(referralServiceClient).getDirectReferrals(customerId);
     }
 
+    @Test
+    void getLeaderboard_leaderboardEntries_successful() {
+        LeaderboardEntry leaderboardEntry = new LeaderboardEntry();
+        leaderboardEntry.getCustomerId();
+        List<LeaderboardEntry> leaderboardEntries = new ArrayList<>();
+        leaderboardEntries.add(leaderboardEntry);
+        when(referralServiceClient.getLeaderboard()).thenReturn(leaderboardEntries);
+
+        Assertions.assertNotNull(customerService.getLeaderboard());
+    }
 
 
 }
